@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { logger } from '@/lib/winston';
-import { getCatFactWithFallback } from '@/utils';
+import { fetchCatFact } from '@/utils';
 
 const getProfile = async (req: Request, res: Response) => {
     try {
-        const catFact = await getCatFactWithFallback(5000);
+        const catFactData = await fetchCatFact(5000);
+        const catFact = catFactData.fact;
 
         const response = {
             status: 'success',
@@ -21,20 +22,14 @@ const getProfile = async (req: Request, res: Response) => {
         res.status(200).json(response);
 
     } catch (error) {
-        logger.error('Unexpected error in profile endpoint:', error);
+        logger.error('Error fetching cat fact:', error);
 
-        const fallbackResponse = {
+        const errorResponse = {
             status: 'error',
-            user: {
-                email: 'dushane@example.com',
-                name: 'Pelayah Epoupa',
-                stack: 'Node.js/Express'
-            },
-            timestamp: new Date().toISOString(),
-            fact: 'Cats have been companions to humans for over 4,000 years.'
+            message: 'Failed to fetch cat fact'
         };
 
-        res.status(200).json(fallbackResponse);
+        res.status(500).json(errorResponse);
     }
 };
 

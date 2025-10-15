@@ -1,3 +1,4 @@
+import config from '@/config';
 import { logger } from '@/lib/winston';
 
 export interface CatFactResponse {
@@ -25,7 +26,7 @@ export const fetchCatFact = async (timeoutMs: number = 5000): Promise<CatFactRes
             }, timeoutMs);
         });
 
-        const fetchPromise = fetch('/fact', {
+        const fetchPromise = fetch(config.CAT_FACT_API_URL + '/fact', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

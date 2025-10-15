@@ -40,7 +40,7 @@ const router = Router();
  *                   type: string
  *                   example: "The technical term for a cat's hairball is a 'bezoar.'"
  *       500:
- *         description: Internal server error
+ *         description: Internal server error - Cat Facts API failure
  *         content:
  *           application/json:
  *             schema:

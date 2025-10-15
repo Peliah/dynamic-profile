@@ -16,6 +16,8 @@ const config = {
     WHITELIST_ADMINS_EMAIL: ['pelepoupa@gmail.com', 'mrbuzzlightyear001@gmail.com'],
     defaultResLimit: 20,
     defaultResOffset: 0,
+
+    CAT_FACT_API_URL: process.env.CAT_FACT_API_URL || 'https://catfact.ninja/',
 };
 
 export default config;

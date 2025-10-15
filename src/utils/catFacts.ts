@@ -25,7 +25,7 @@ export const fetchCatFact = async (timeoutMs: number = 5000): Promise<CatFactRes
             }, timeoutMs);
         });
 
-        const fetchPromise = fetch('https://catfact.ninja/fact', {
+        const fetchPromise = fetch('/fact', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

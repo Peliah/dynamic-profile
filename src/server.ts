@@ -81,7 +81,7 @@ app.use(limiter);
 
 const handleShutdown = async () => {
   try {
-    await disconnectFromDatabase();
+    // await disconnectFromDatabase();
     logger.warn('Shutting down gracefully...');
     process.exit(0);
   } catch (error) {

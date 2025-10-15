@@ -7,16 +7,12 @@ import helmet from 'helmet';
 import limiter from '@/lib/express_rate_limit';
 import v1routes from '@/routes/v1/index';
 import http from 'http';
-import { connectToDatabase, disconnectFromDatabase } from './lib/mongoose';
 import { logger } from '@/lib/winston';
 import swagger from './config/swagger';
 import swaggerUI from 'swagger-ui-express';
-// import { authenticateSocket } from '@/middleware/authenticate';
-const socketio = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server, { cors: { origin: '*' } });
 
 // Middleware setup
 const corsOptions: CorsOptions = {
@@ -47,7 +43,6 @@ app.use(limiter);
 
 (async () => {
   try {
-    // await connectToDatabase();
     app.use('/api/v1', v1routes);
     app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swagger));
     app.get("/swagger.json", (req, res) => {
@@ -66,22 +61,8 @@ app.use(limiter);
   }
 })();
 
-// Websocket server setup
-// io.use(authenticateSocket);
-// io.on('connection', (socket: any) => {
-//   logger.info(`New client connected: ${socket.id}`);
-//   socket.on('message', (message: string) => {
-//     logger.info(`Message from ${socket.id}: ${message}`);
-//     // Handle incoming messages
-//   });
-//   socket.on('disconnect', () => {
-//     logger.info("Client disconnected", socket.id);
-//   });
-// });
-
 const handleShutdown = async () => {
   try {
-    // await disconnectFromDatabase();
     logger.warn('Shutting down gracefully...');
     process.exit(0);
   } catch (error) {
@@ -91,5 +72,3 @@ const handleShutdown = async () => {
 
 process.on('SIGTERM', handleShutdown);
 process.on('SIGINT', handleShutdown);
-
-export { io };

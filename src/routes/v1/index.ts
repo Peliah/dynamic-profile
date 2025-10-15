@@ -1,6 +1,4 @@
 import { Router } from "express";
-// import authRoutes from './auth';
-import userRoutes from './user';
 import profileRoutes from './profile';
 
 const router = Router();
@@ -16,8 +14,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// router.use('/auth', authRoutes);
-// router.use('/users', userRoutes);
 router.use('/', profileRoutes);
 
 export default router;

@@ -6,7 +6,7 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const STRINGS_FILE = path.join(DATA_DIR, 'analyzed_strings.json');
 
 export interface AnalyzedString {
-    id: string; // SHA-256 hash
+    id: string;
     value: string;
     properties: {
         length: number;
@@ -16,7 +16,7 @@ export interface AnalyzedString {
         sha256_hash: string;
         character_frequency_map: Record<string, number>;
     };
-    created_at: string; // ISO string
+    created_at: string;
 }
 
 /**
@@ -60,17 +60,17 @@ export async function writeAnalyzedStrings(strings: AnalyzedString[]): Promise<v
 }
 
 /**
- * Finds an analyzed string by its ID (SHA-256 hash)
+ * Finds an analyzed string by its value
  */
-export async function findAnalyzedStringById(id: string): Promise<AnalyzedString | null> {
-    logger.debug('Searching for analyzed string by ID', { id });
+export async function findAnalyzedStringByValue(value: string): Promise<AnalyzedString | null> {
+    logger.debug('Searching for analyzed string by value', { value });
     const strings = await readAnalyzedStrings();
-    const found = strings.find(str => str.id === id) || null;
+    const found = strings.find(str => str.value === value) || null;
 
     if (found) {
-        logger.debug('Found analyzed string by ID', { id, value: found.value });
+        logger.debug('Found analyzed string by value', { value, foundValue: found.value });
     } else {
-        logger.debug('No analyzed string found with ID', { id });
+        logger.debug('No analyzed string found with value', { value });
     }
 
     return found;

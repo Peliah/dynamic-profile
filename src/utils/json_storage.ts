@@ -96,20 +96,20 @@ export async function addAnalyzedString(analyzedString: AnalyzedString): Promise
 /**
  * Removes an analyzed string by its ID
  */
-export async function removeAnalyzedStringById(id: string): Promise<boolean> {
-    logger.info('Attempting to remove analyzed string by ID', { id });
+export async function removeAnalyzedStringByValue(value: string): Promise<boolean> {
+    logger.info('Attempting to remove analyzed string by value', { value });
 
     const strings = await readAnalyzedStrings();
     const initialLength = strings.length;
-    const filteredStrings = strings.filter(str => str.id !== id);
+    const filteredStrings = strings.filter(str => str.value !== value);
 
     if (filteredStrings.length < initialLength) {
         await writeAnalyzedStrings(filteredStrings);
-        logger.info('Successfully removed analyzed string', { id, removedCount: initialLength - filteredStrings.length });
+        logger.info('Successfully removed analyzed string', { value, removedCount: initialLength - filteredStrings.length });
         return true;
     }
 
-    logger.warn('No analyzed string found to remove', { id });
+    logger.warn('No analyzed string found to remove', { value });
     return false;
 }
 

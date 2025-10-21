@@ -227,26 +227,28 @@ router.get('/:string_value', getString);
 
 /**
  * @openapi
- * /api/v1/strings/{id}:
+ * /api/v1/strings/{string_value}:
  *   delete:
- *     summary: Delete a specific analyzed string by ID
+ *     summary: Delete a specific analyzed string by its value
  *     tags: [Strings]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: string_value
  *         required: true
  *         schema:
  *           type: string
- *           pattern: '^[a-f0-9]{64}$'
- *         description: SHA-256 hash of the string
+ *         description: The actual string value to delete
+ *         example: "Hello World!"
  *     responses:
- *       200:
- *         description: String deleted successfully
+ *       204:
+ *         description: String deleted successfully (No Content)
  *       400:
- *         description: Bad request - Invalid string ID format
+ *         description: Bad request - String value is required
  *       404:
  *         description: String not found
+ *       500:
+ *         description: Internal server error
  */
-router.delete('/:id', deleteString);
+router.delete('/:string_value', deleteString);
 
 export default router;

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import profileRoutes from './profile';
+import stringRoutes from './string';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.get('/', (req, res) => {
 });
 
 router.use('/', profileRoutes);
+router.use('/strings', stringRoutes);
 
 export default router;

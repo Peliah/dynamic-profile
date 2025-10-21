@@ -3,6 +3,7 @@ import { analyzeString, validateAnalyzeString } from '../../controllers/v1/strin
 import { getString } from '../../controllers/v1/strings/get_string';
 import { getStrings } from '../../controllers/v1/strings/get_strings';
 import { deleteString } from '../../controllers/v1/strings/delete_string';
+import { filterByNaturalLanguage } from '../../controllers/v1/strings/filter_by_natural_language';
 
 const router = Router();
 
@@ -171,6 +172,75 @@ router.post('/', validateAnalyzeString, analyzeString);
  *         description: Bad request - Invalid pagination or filter parameters
  */
 router.get('/', getStrings);
+
+/**
+ * @openapi
+ * /api/v1/strings/filter-by-natural-language:
+ *   get:
+ *     summary: Filter strings using natural language queries
+ *     tags: [Strings]
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Natural language query to parse into filters
+ *         examples:
+ *           single_word_palindromes:
+ *             summary: Single word palindromes
+ *             value: "all single word palindromic strings"
+ *           long_strings:
+ *             summary: Long strings
+ *             value: "strings longer than 10 characters"
+ *           palindromes_with_vowel:
+ *             summary: Palindromes with vowel
+ *             value: "palindromic strings that contain the first vowel"
+ *           strings_with_z:
+ *             summary: Strings with letter z
+ *             value: "strings containing the letter z"
+ *     responses:
+ *       200:
+ *         description: Strings matching the natural language query
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       value:
+ *                         type: string
+ *                       properties:
+ *                         type: object
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                 count:
+ *                   type: integer
+ *                   description: Number of matching strings
+ *                 interpreted_query:
+ *                   type: object
+ *                   properties:
+ *                     original:
+ *                       type: string
+ *                       description: The original query
+ *                     parsed_filters:
+ *                       type: object
+ *                       description: Parsed filter parameters
+ *       400:
+ *         description: Bad request - Unable to parse natural language query
+ *       422:
+ *         description: Unprocessable Entity - Query parsed but resulted in conflicting filters
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/filter-by-natural-language', filterByNaturalLanguage);
 
 /**
  * @openapi

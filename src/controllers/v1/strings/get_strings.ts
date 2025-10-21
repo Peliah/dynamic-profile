@@ -1,6 +1,13 @@
 import { Request, Response } from 'express';
 import { logger } from '../../../lib/winston';
 import { readAnalyzedStrings } from '../../../utils/json_storage';
+import {
+    parseQueryFilters,
+    validateFilterParameters,
+    applyFilters,
+    buildFiltersApplied,
+    FilterParameters
+} from '../../../utils/string_filters';
 
 /**
  * Gets all analyzed strings with optional pagination and filtering
@@ -13,14 +20,8 @@ export const getStrings = async (req: Request, res: Response): Promise<void> => 
         const limit = parseInt(req.query.limit as string) || 10;
         const offset = (page - 1) * limit;
 
-        // Extract filter parameters
-        const filters = {
-            is_palindrome: req.query.is_palindrome as string | undefined,
-            min_length: req.query.min_length as string | undefined,
-            max_length: req.query.max_length as string | undefined,
-            word_count: req.query.word_count as string | undefined,
-            contains_character: req.query.contains_character as string | undefined
-        };
+        // Extract and parse filter parameters
+        const filters = parseQueryFilters(req.query);
 
         logger.info('Get strings request received', {
             page,
@@ -48,45 +49,7 @@ export const getStrings = async (req: Request, res: Response): Promise<void> => 
         }
 
         // Validate filter parameters
-        const validationErrors: string[] = [];
-
-        if (filters.is_palindrome !== undefined && !['true', 'false'].includes(filters.is_palindrome)) {
-            validationErrors.push('is_palindrome must be "true" or "false"');
-        }
-
-        if (filters.min_length !== undefined) {
-            const minLength = parseInt(filters.min_length);
-            if (isNaN(minLength) || minLength < 0) {
-                validationErrors.push('min_length must be a non-negative integer');
-            }
-        }
-
-        if (filters.max_length !== undefined) {
-            const maxLength = parseInt(filters.max_length);
-            if (isNaN(maxLength) || maxLength < 0) {
-                validationErrors.push('max_length must be a non-negative integer');
-            }
-        }
-
-        if (filters.word_count !== undefined) {
-            const wordCount = parseInt(filters.word_count);
-            if (isNaN(wordCount) || wordCount < 0) {
-                validationErrors.push('word_count must be a non-negative integer');
-            }
-        }
-
-        if (filters.contains_character !== undefined && filters.contains_character.length !== 1) {
-            validationErrors.push('contains_character must be a single character');
-        }
-
-        // Check for logical conflicts
-        if (filters.min_length && filters.max_length) {
-            const minLength = parseInt(filters.min_length);
-            const maxLength = parseInt(filters.max_length);
-            if (minLength > maxLength) {
-                validationErrors.push('min_length cannot be greater than max_length');
-            }
-        }
+        const validationErrors = validateFilterParameters(filters);
 
         if (validationErrors.length > 0) {
             logger.warn('Invalid filter parameters provided', {
@@ -96,7 +59,7 @@ export const getStrings = async (req: Request, res: Response): Promise<void> => 
 
             res.status(400).json({
                 error: 'Invalid query parameter values or types',
-                details: validationErrors
+                details: validationErrors.map(err => err.message)
             });
             return;
         }
@@ -104,51 +67,8 @@ export const getStrings = async (req: Request, res: Response): Promise<void> => 
         const allStrings = await readAnalyzedStrings();
         logger.debug('Retrieved all strings from storage', { totalCount: allStrings.length });
 
-
-
-        // Apply filters
-        let filteredStrings = allStrings.filter(string => {
-            // is_palindrome filter
-            if (filters.is_palindrome !== undefined) {
-                const isPalindrome = filters.is_palindrome === 'true';
-                if (string.properties.is_palindrome !== isPalindrome) {
-                    return false;
-                }
-            }
-
-            // min_length filter
-            if (filters.min_length !== undefined) {
-                const minLength = parseInt(filters.min_length);
-                if (string.properties.length < minLength) {
-                    return false;
-                }
-            }
-
-            // max_length filter
-            if (filters.max_length !== undefined) {
-                const maxLength = parseInt(filters.max_length);
-                if (string.properties.length > maxLength) {
-                    return false;
-                }
-            }
-
-            // word_count filter
-            if (filters.word_count !== undefined) {
-                const wordCount = parseInt(filters.word_count);
-                if (string.properties.word_count !== wordCount) {
-                    return false;
-                }
-            }
-
-            // contains_character filter
-            if (filters.contains_character !== undefined) {
-                if (!string.value.toLowerCase().includes(filters.contains_character.toLowerCase())) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
+        // Apply filters using shared utility
+        const filteredStrings = applyFilters(allStrings, filters as FilterParameters);
 
         logger.debug('Applied filters to strings', {
             originalCount: allStrings.length,
@@ -164,23 +84,8 @@ export const getStrings = async (req: Request, res: Response): Promise<void> => 
         const hasNextPage = page < totalPages;
         const hasPrevPage = page > 1;
 
-        // Build filters_applied object (only include applied filters)
-        const filtersApplied: Record<string, any> = {};
-        if (filters.is_palindrome !== undefined) {
-            filtersApplied.is_palindrome = filters.is_palindrome === 'true';
-        }
-        if (filters.min_length !== undefined) {
-            filtersApplied.min_length = parseInt(filters.min_length);
-        }
-        if (filters.max_length !== undefined) {
-            filtersApplied.max_length = parseInt(filters.max_length);
-        }
-        if (filters.word_count !== undefined) {
-            filtersApplied.word_count = parseInt(filters.word_count);
-        }
-        if (filters.contains_character !== undefined) {
-            filtersApplied.contains_character = filters.contains_character;
-        }
+        // Build filters_applied object using shared utility
+        const filtersApplied = buildFiltersApplied(filters);
 
         const processingTime = Date.now() - startTime;
         logger.info('Strings retrieved successfully with filters', {

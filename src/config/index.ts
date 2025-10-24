@@ -12,6 +12,8 @@ const config = {
     defaultResOffset: 0,
 
     CAT_FACT_API_URL: process.env.CAT_FACT_API_URL || 'https://catfact.ninja/',
+    COUNTRY_DATA: process.env.COUNTRY_DATA || 'https://restcountries.com/v2/all?fields=name,capital,region,population,flag,currencies',
+    EXCHANGE_RATE: process.env.EXCHANGE_RATE || ' https://open.er-api.com/v6/latest/USD'
 };
 
 export default config;

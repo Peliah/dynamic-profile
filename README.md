@@ -1,112 +1,206 @@
-# Dynamic Profile API
+# Country Data API
 
-A Node.js/Express API that provides a dynamic profile endpoint with real-time cat facts from an external API.
+A RESTful API that fetches country data from external APIs, stores it in a MySQL database, and provides CRUD operations with exchange rate calculations.
 
-## 🚀 Features
+## Features
 
-- **Dynamic Profile Endpoint**: GET `/api/v1/me` returns profile information with current timestamp
-- **Cat Facts Integration**: Fetches random cat facts from [Cat Facts API](https://catfact.ninja/fact)
-- **Graceful Error Handling**: Fallback cat facts when external API is unavailable
-- **Rate Limiting**: Built-in protection against abuse
-- **CORS Support**: Configurable cross-origin resource sharing
-- **Swagger Documentation**: Interactive API documentation
-- **Logging**: Comprehensive logging with Winston
-- **TypeScript**: Full TypeScript support with type safety
+- Fetch country data from REST Countries API
+- Fetch exchange rates from Open Exchange Rates API
+- Calculate estimated GDP based on population and exchange rates
+- Store data in MySQL database
+- Generate summary images
+- Full CRUD operations for countries
+- Filtering and sorting capabilities
 
-## 📋 Prerequisites
+## Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js (v16 or higher)
+- MySQL (v8.0 or higher)
 - npm or yarn
-- MongoDB (optional, for user management features)
 
-## 🛠️ Installation
+## Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Peliah/dynamic-profile
-   cd dynamic-profile
-   ```
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd dynamic-profile
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+2. Install dependencies:
+```bash
+npm install
+```
 
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` file with your configuration:
-   ```env
-   NODE_ENV=development
-   PORT=3030
-   MONGODB_URI=mongodb://localhost:27017/dynamic-profile
-   JWT_SECRET=your-jwt-secret-here
-   WHITELIST_ORIGINS=http://localhost:3000,http://localhost:3030
-   ```
+3. Set up environment variables:
+Create a `.env` file in the root directory with the following variables:
 
-4. **Build the project**
-   ```bash
-   npm run build
-   ```
+```env
+# Server Configuration
+PORT=3030
+NODE_ENV=development
+LOG_LEVEL=info
 
-## 🚀 Running the Application
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password_here
+DB_NAME=countries_db
 
-### Development Mode
+# External APIs
+CAT_FACT_API_URL=https://catfact.ninja/
+COUNTRY_DATA=https://restcountries.com/v2/all?fields=name,capital,region,population,flag,currencies
+EXCHANGE_RATE=https://open.er-api.com/v6/latest/USD
+```
+
+4. Set up MySQL database:
+```sql
+CREATE DATABASE countries_db;
+```
+
+5. Build the project:
+```bash
+npm run build
+```
+
+6. Start the server:
+```bash
+npm start
+```
+
+For development:
 ```bash
 npm run dev
 ```
 
-### Production Mode
+## API Endpoints
+
+### Countries
+
+- `POST /api/v1/countries/refresh` - Fetch and cache all countries data
+- `GET /api/v1/countries` - Get all countries (with filters and sorting)
+- `GET /api/v1/countries/:name` - Get a specific country by name
+- `DELETE /api/v1/countries/:name` - Delete a country record
+- `GET /api/v1/countries/image` - Get the summary image
+
+### Status
+
+- `GET /api/v1/status` - Get total countries count and last refresh timestamp
+
+## Query Parameters
+
+### GET /api/v1/countries
+
+- `region` - Filter by region (e.g., Africa, Europe)
+- `currency` - Filter by currency code (e.g., USD, EUR)
+- `sort` - Sort options:
+  - `gdp_desc` - Sort by estimated GDP descending
+  - `gdp_asc` - Sort by estimated GDP ascending
+  - `population_desc` - Sort by population descending
+  - `population_asc` - Sort by population ascending
+  - `name_asc` - Sort by name ascending
+  - `name_desc` - Sort by name descending
+- `limit` - Number of results to return (default: 1000)
+- `offset` - Number of results to skip (default: 0)
+
+## Example Usage
+
+### Refresh Countries Data
 ```bash
-npm run build
-npm start
+curl -X POST http://localhost:3030/api/v1/countries/refresh
 ```
 
-The server will start on `http://localhost:3030` (or your configured PORT).
+### Get All Countries
+```bash
+curl http://localhost:3030/api/v1/countries
+```
 
-## 📚 API Documentation
+### Get Countries by Region
+```bash
+curl "http://localhost:3030/api/v1/countries?region=Africa"
+```
 
-### Core Endpoint
+### Get Countries Sorted by GDP
+```bash
+curl "http://localhost:3030/api/v1/countries?sort=gdp_desc"
+```
 
-#### GET `/api/v1/me`
-Returns a dynamic profile with a random cat fact.
+### Get Specific Country
+```bash
+curl http://localhost:3030/api/v1/countries/Nigeria
+```
 
-**Response:**
+### Get Status
+```bash
+curl http://localhost:3030/api/v1/status
+```
+
+## Response Format
+
+### Country Object
 ```json
 {
-  "status": "success",
-  "user": {
-    "email": "pelepoupa@gmail.com",
-    "name": "Pelayah Epoupa",
-    "stack": "Node.js/Express"
-  },
-  "timestamp": "2025-01-15T12:34:56.789Z",
-  "fact": "The technical term for a cat's hairball is a 'bezoar.'"
+  "id": 1,
+  "name": "Nigeria",
+  "capital": "Abuja",
+  "region": "Africa",
+  "population": 206139589,
+  "currency_code": "NGN",
+  "exchange_rate": 1600.23,
+  "estimated_gdp": 25767448125.2,
+  "flag_url": "https://flagcdn.com/ng.svg",
+  "last_refreshed_at": "2025-10-22T18:00:00Z"
 }
 ```
 
-**Features:**
-- ✅ Dynamic timestamp (ISO 8601 format)
-- ✅ Random cat fact on every request
-- ✅ Graceful fallback if Cat Facts API is down
-- ✅ No authentication required
+### Status Response
+```json
+{
+  "total_countries": 250,
+  "last_refreshed_at": "2025-10-22T18:00:00Z"
+}
+```
 
-### Interactive Documentation
-Visit `http://localhost:3030/api-docs` for Swagger UI documentation.
+## Error Handling
 
-## 🧪 Testing
+The API returns consistent JSON error responses:
 
-### Test the `/me` endpoint
-```bash
-# Using curl
-curl -X GET http://localhost:3030/api/v1/me -H "Content-Type: application/json"
+- `400 Bad Request` - Validation failed
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Server error
+- `503 Service Unavailable` - External API unavailable
 
+## Database Schema
 
-### Expected Response
-- Status code: `200 OK`
-- Content-Type: `application/json`
-- All required fields present
-- Different cat fact on each request
-- Current UTC timestamp
+### Countries Table
+- `id` - Auto-increment primary key
+- `name` - Country name (unique)
+- `capital` - Capital city
+- `region` - Geographic region
+- `population` - Population count
+- `currency_code` - Currency code (e.g., USD, EUR)
+- `exchange_rate` - Exchange rate to USD
+- `estimated_gdp` - Calculated GDP estimate
+- `flag_url` - URL to country flag image
+- `last_refreshed_at` - Last update timestamp
+- `created_at` - Creation timestamp
+- `updated_at` - Last modification timestamp
+
+### Refresh Log Table
+- `id` - Auto-increment primary key
+- `last_refreshed_at` - Refresh timestamp
+- `total_countries` - Total countries count
+- `created_at` - Creation timestamp
+
+## Development
+
+The project uses TypeScript and includes:
+- Express.js for the web framework
+- MySQL2 for database connectivity
+- Canvas for image generation
+- Winston for logging
+- Swagger for API documentation
+
+## License
+
+MIT License

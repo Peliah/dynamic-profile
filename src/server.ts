@@ -10,6 +10,7 @@ import http from 'http';
 import { logger } from '@/lib/winston';
 import swagger from './config/swagger';
 import swaggerUI from 'swagger-ui-express';
+import Database from '@/lib/database';
 
 const app = express();
 const server = http.createServer(app);
@@ -43,6 +44,11 @@ app.use(limiter);
 
 (async () => {
   try {
+    // Initialize database connection
+    const db = Database.getInstance();
+    await db.connect();
+    logger.info('Database connection established');
+
     app.use('/api/v1', v1routes);
     app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swagger));
     app.get("/swagger.json", (req, res) => {
@@ -64,6 +70,8 @@ app.use(limiter);
 const handleShutdown = async () => {
   try {
     logger.warn('Shutting down gracefully...');
+    const db = Database.getInstance();
+    await db.disconnect();
     process.exit(0);
   } catch (error) {
     logger.error('Error during shutdown:', error);

@@ -151,8 +151,7 @@ export class CountryModel {
         // Apply pagination
         const limit = filters.limit || 1000; // Default limit
         const offset = filters.offset || 0;
-        query += ' LIMIT ? OFFSET ?';
-        values.push(limit, offset);
+        query += ` LIMIT ${parseInt(limit.toString())} OFFSET ${parseInt(offset.toString())}`;
 
         try {
             const [rows] = await connection.execute(query, values);

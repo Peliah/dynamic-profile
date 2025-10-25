@@ -21,7 +21,6 @@ class Database {
         }
 
         try {
-            // First connect without database to create it if it doesn't exist
             const tempConnection = await mysql.createConnection({
                 host: config.DB_HOST,
                 port: config.DB_PORT,
@@ -30,11 +29,9 @@ class Database {
                 charset: 'utf8mb4'
             });
 
-            // Create database if it doesn't exist
             await tempConnection.execute(`CREATE DATABASE IF NOT EXISTS \`${config.DB_NAME}\``);
             await tempConnection.end();
 
-            // Now connect to the specific database
             this.connection = await mysql.createConnection({
                 host: config.DB_HOST,
                 port: config.DB_PORT,

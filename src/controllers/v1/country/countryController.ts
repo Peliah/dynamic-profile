@@ -23,7 +23,6 @@ export class CountryController {
         this.getSummaryImageController = new GetSummaryImageController();
     }
 
-    // Delegate methods to individual controllers
     public refreshCountries = (req: Request, res: Response) => this.refreshCountriesController.refreshCountries(req, res);
     public getCountries = (req: Request, res: Response) => this.getCountriesController.getCountries(req, res);
     public getCountryByName = (req: Request, res: Response) => this.getCountryByNameController.getCountryByName(req, res);

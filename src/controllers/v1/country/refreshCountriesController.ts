@@ -30,14 +30,12 @@ export class RefreshCountriesController {
             let processedCount = 0;
             let updatedCount = 0;
             let insertedCount = 0;
-            const batchSize = 50; // Process countries in batches
+            const batchSize = 50;
 
-            // Process countries in batches to avoid overwhelming the database
             for (let i = 0; i < externalCountries.length; i += batchSize) {
                 const batch = externalCountries.slice(i, i + batchSize);
                 logger.info(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(externalCountries.length / batchSize)} (${batch.length} countries)`);
 
-                // Process batch concurrently
                 const batchPromises = batch.map(async (externalCountry) => {
                     try {
                         const currencyCode = ExternalApiService.extractCurrencyCode(externalCountry);
@@ -84,10 +82,8 @@ export class RefreshCountriesController {
                     }
                 });
 
-                // Wait for batch to complete
                 const batchResults = await Promise.all(batchPromises);
 
-                // Count results
                 batchResults.forEach(result => {
                     processedCount++;
                     if (result.action === 'updated') updatedCount++;
@@ -97,12 +93,10 @@ export class RefreshCountriesController {
                 logger.info(`Batch completed: ${processedCount}/${externalCountries.length} processed`);
             }
 
-            // Update refresh log
             const totalCountries = await this.countryModel.count();
             await this.countryModel.updateRefreshLog(totalCountries);
 
             logger.info('Generating summary image...');
-            // Generate summary image
             const allCountries = await this.countryModel.findAll({ limit: 1000 });
             const lastRefreshTime = new Date();
             await ImageGenerationService.generateSummaryImage(allCountries, totalCountries, lastRefreshTime);

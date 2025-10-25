@@ -36,10 +36,7 @@ export class DeleteCountryByNameController {
                 return;
             }
 
-            res.status(200).json({
-                message: 'Country deleted successfully',
-                name: name.trim()
-            });
+            res.status(204).send();
         } catch (error) {
             logger.error('Error deleting country:', error);
             res.status(500).json({

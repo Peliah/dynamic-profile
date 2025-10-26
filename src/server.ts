@@ -15,6 +15,9 @@ import Database from '@/lib/database';
 const app = express();
 const server = http.createServer(app);
 
+// Trust proxy for rate limiting behind proxies (Railway, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // Middleware setup
 const corsOptions: CorsOptions = {
   origin(origin, callback) {
